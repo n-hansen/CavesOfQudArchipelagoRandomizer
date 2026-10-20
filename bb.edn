@@ -1,0 +1,169 @@
+{:deps {dev.weavejester/medley {:mvn/version "1.10.0"}}
+ :tasks
+ {:requires ([babashka.process :as p]
+             [babashka.fs :as fs]
+             [clojure.java.io :as io]
+             [clojure.string :as str]
+             [medley.core :as m])
+  -game-mod-path (fs/expand-home "~/Library/Application Support/com.FreeholdGames.CavesOfQud/Mods/")
+  -game-bin (fs/expand-home "~/Library/Application Support/Steam/steamapps/common/Caves of Qud/CoQ.app/Contents/MacOS/CoQ")
+  -mod-dir-name "CavesOfQudArchipelagoRandomizer"
+  -mod-contents ["manifest.json"
+                 "LICENSE.txt"
+                 "README.md"
+                 "src"
+                 "thirdparty"
+                 "Archipelago/worlds/cavesofqud/data"]
+
+  collect {:depends [-mod-dir-name
+                     -mod-contents]
+           :doc "collect mod files to bin"
+           :task (let [mod-dir (fs/path "bin" -mod-dir-name)]
+                  (fs/delete-tree mod-dir)
+                  (fs/create-dirs mod-dir)
+                  (->> -mod-contents
+                   (map fs/path)
+                   (run! (fn [p] ((if (fs/directory? p) fs/copy-tree fs/copy)
+                                  p (fs/path mod-dir p)))))
+                  (println "Collected mod data to" (str mod-dir))
+                  mod-dir)}
+
+  install {:depends [-game-mod-path
+                     -mod-dir-name
+                     collect]
+           :doc "install mod in local qud"
+           :task (let [install-path (fs/path -game-mod-path -mod-dir-name)]
+                  (fs/delete-tree install-path)
+                  (fs/copy-tree collect install-path)
+                  (println "Wrote mod data to" (str install-path))
+                  install-path)}
+
+  uninstall {:depends [-game-mod-path -mod-dir-name]
+             :doc "rm mod from local qud"
+             :task (fs/delete-tree (fs/path -game-mod-path -mod-dir-name))}
+
+  run {:depends [-game-bin install]
+       :override-builtin true
+       :doc "run Caves of Qud"
+       :task (p/exec -game-bin "-logFile" "-")}
+
+  run-no-install {:depends [-game-bin]
+                  :override-builtin true
+                  :task (p/exec -game-bin "-logFile" "-")}
+
+  -py-root "Archipelago"
+  -venv {:depends [-py-root]
+         :task (do
+                (when-not (fs/exists? (fs/path -py-root ".venv"))
+                 (p/shell {:dir -py-root} "uv" "venv" "--seed" "--python" "3.13"))
+                (p/shell {:dir -py-root} "uv" "pip" "install" "-r" "requirements.txt")
+                (fn [& args] (apply p/shell {:dir -py-root} "uv" "run" args)))}
+
+  template {:depends [-py-root -venv]
+            :doc "build templates"
+            :task (-venv "Launcher.py" "Generate Template Options")}
+
+  gen-world {:depends [-venv]
+             :doc "generate an ap world"
+             :task (-venv "python" "-O" "Generate.py")}
+
+  -most-recent-world-file {:depends [-py-root]
+                           :task (->> (fs/glob (fs/path -py-root "output") "*.zip")
+                                  (apply m/greatest-by fs/creation-time))}
+
+  server {:depends [-py-root -most-recent-world-file -venv]
+          :doc "start ap server using most recent generated ap-world"
+          :task (let [rel-wf (fs/relativize -py-root -most-recent-world-file)]
+                 (-venv "python" "MultiServer.py" (str rel-wf)))
+          }
+
+  clear-saves {:depends [-py-root]
+               :task (doseq [p (fs/glob (fs/path -py-root "output") "*.apsave")]
+                      (fs/delete p))}
+
+  -data-dir (fs/path "notes" "data")
+  -data-db-path {:depends [-data-dir]
+                 :task (fs/path -data-dir "data.db")}
+  -data-snapshots {:depends [-data-dir]
+                   :task (fs/glob -data-dir "snapshots/*.json")}
+  -data-events {:depends [-data-dir]
+                :task (fs/glob -data-dir "event_capture/*.json")}
+  -data-db {:depends [-data-db-path -data-snapshots -data-events]
+            :task (do (when (or (not (fs/exists? -data-db-path))
+                             (->> (concat -data-snapshots -data-events)
+                              (fs/modified-since -data-db-path)
+                              (not-empty)))
+                       (println "rebuilding data db")
+                       (fs/delete-if-exists -data-db-path)
+                       (let [data-defs "
+CREATE TABLE game_data (
+  playerName STRING,
+  gameId UUID,
+  filename STRING,
+  startingYear LONG,
+  currentYear LONG,
+  historyEvents STRUCT(
+    entity STRING,
+    entityId STRING,
+    year LONG,
+    duration LONG,
+    id LONG,
+    eventProperties MAP(STRING,STRING)
+  )[],
+  sultanEntries STRUCT(
+    sultan UUID,
+    eventId LONG,
+    entryId UUID,
+    attributes STRING[]
+  )[]
+);
+
+CREATE TABLE game_events (
+  gameId UUID,
+  turns LONG,
+  timeTicks LONG,
+  journalEntryId UUID,
+  playerLevel INT,
+  playerXp INT
+);"
+                             load-snapshots (format "
+INSERT INTO game_data BY NAME (
+  SELECT
+    playerName,
+    gameId,
+    filename,
+    startingYear,
+    currentYear,
+    historyEvents,
+    sultanEntries
+  FROM read_json('%s/*.json', union_by_name = true, filename = true)
+);"
+                                             (fs/parent (first -data-snapshots)))
+                             load-events (format "
+INSERT INTO game_events BY NAME (
+  SELECT gameId, turns, timeTicks, journalEntryId, playerLevel, playerXp
+  FROM read_json('%s/*.json', union_by_name = true)
+);"
+                                          (fs/parent (first -data-events)))
+                             sql (str/join \newline [data-defs
+                                                     load-snapshots
+                                                     load-events])]
+                        (shell {:in sql} "duckdb" -data-db-path)))
+                   -data-db-path)}
+
+  data-notebook {:depends [-data-db]
+                 :extra-deps {io.github.nextjournal/clerk {:mvn/version "0.18.1158"}}
+                 :extra-paths ["notes"]
+                 :task (do
+                        ((requiring-resolve 'babashka.nrepl.server/start-server!)
+                         {:host "localhost" :port 1339})
+                        (spit ".nrepl-port" "1339")
+                        ((requiring-resolve 'nextjournal.clerk/serve!)
+                         {:watch-paths ["notes"]
+                          :paths ["notes/notebook.clj"]})
+
+                        (-> (Runtime/getRuntime)
+                         (.addShutdownHook (Thread. (fn []
+                                                     (fs/delete ".nrepl-port")))))
+                        (deref (promise)))}
+  }}

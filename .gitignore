@@ -2,3 +2,7 @@ bin
 obj
 *.sln
 .vscode
+
+.clerk
+.nrepl-port
+notes/data

@@ -20,6 +20,10 @@ public class PersistentData : IComposite
     public int MaxLevel;
     public int LocationsPerLevel;
 
+    public ArithSeq AggregateSecretLocations;
+    public ArithSeq PerPeriodSecretLocations;
+    public ArithSeq ReshephSecretLocations;
+
     public int ItemIndex = 0;
     public int RandomObjectIndex = 0;
 
@@ -132,6 +136,9 @@ public class APGame : IPlayerSystem
             Data.Goal = (int)(long)goal;
             Data.MaxLevel = (int)(long)50; // TODO TMP
             Data.LocationsPerLevel = (int)(long)locationsPerLevel;
+            Data.AggregateSecretLocations = new(5,5,30); // TODO add to yaml
+            Data.PerPeriodSecretLocations = new(1,1,1); // TODO add to yaml
+            Data.ReshephSecretLocations = new(1,3,2); // TODO add to yaml
 
             SyncLocations();
 

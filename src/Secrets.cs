@@ -41,7 +41,7 @@ public class PlayerSecretsMod : IPart
         }
     }
 
-    private static bool _isSecretLocation(int secretsFound, int secretsPerLoc, int maxSecrets)
+    private static bool IsSecretLocation(int secretsFound, int secretsPerLoc, int maxSecrets)
     {
         return (secretsFound == maxSecrets) ||
                (secretsFound < maxSecrets && secretsFound % secretsPerLoc == 0);
@@ -69,7 +69,7 @@ public class PlayerSecretsMod : IPart
 
                 }
 
-                if (_isSecretLocation(
+                if (IsSecretLocation(
                     seenAllSultans,
                     APGame.Instance.Data.SultanSecretsPerLocation,
                     APGame.Instance.Data.SultanSecretsRequired
@@ -81,12 +81,12 @@ public class PlayerSecretsMod : IPart
                 if (sultanPeriod == 6)
                 {
                     if(APGame.Instance.Data.ReshephSecretsRequired > 0 ?
-                        _isSecretLocation(
+                        IsSecretLocation(
                             seenSameSultan,
                             APGame.Instance.Data.ReshephSecretsPerLocation,
                             APGame.Instance.Data.ReshephSecretsRequired
                         ) :
-                        _isSecretLocation(
+                        IsSecretLocation(
                             seenSameSultan,
                             APGame.Instance.Data.PeriodSultanSecretsPerLocation,
                             APGame.Instance.Data.PeriodSultanSecretsRequired
@@ -98,7 +98,7 @@ public class PlayerSecretsMod : IPart
                 }
                 else
                 {
-                    if (_isSecretLocation(
+                    if (IsSecretLocation(
                         seenSameSultan,
                         APGame.Instance.Data.PeriodSultanSecretsPerLocation,
                         APGame.Instance.Data.PeriodSultanSecretsRequired

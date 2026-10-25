@@ -75,7 +75,7 @@ public class PlayerSecretsMod : IPart
                     APGame.Instance.Data.SultanSecretsRequired
                 ))
                 {
-                    APGame.Instance.CheckLocation($"{n} Sultan Lore");
+                    APGame.Instance.CheckLocation($"{seenAllSultans} Sultan Lore");
                 }
 
                 if (sultanPeriod == 6)
@@ -93,7 +93,7 @@ public class PlayerSecretsMod : IPart
                         )
                     )
                     {
-                        APGame.Instance.CheckLocation($"{m} Resheph Lore");
+                        APGame.Instance.CheckLocation($"{seenSameSultan} Resheph Lore");
                     }
                 }
                 else
@@ -104,7 +104,7 @@ public class PlayerSecretsMod : IPart
                         APGame.Instance.Data.PeriodSultanSecretsRequired
                     ))
                     {
-                        string count = m == 1 ? "" : $"{m} ";
+                        string count = seenSameSultan == 1 ? "" : $"{seenSameSultan} ";
                         string periodName = sultanPeriod switch
                         {
                             1 => "First",
@@ -113,7 +113,7 @@ public class PlayerSecretsMod : IPart
                             4 => "Fourth",
                             _ => "Fifth"
                         };
-                        APGame.Instance.CheckLocation($"{count} Lore from the {periodName} Sultanate");
+                        APGame.Instance.CheckLocation($"{count}Lore from the {periodName} Sultanate");
                     }
                 }
             }

@@ -41,6 +41,19 @@ public class PlayerSecretsMod : IPart
         }
     }
 
+    private static int? _secretLocationIndex(int secretsFound, int secretsPerLoc, int maxSecrets)
+    {
+        if (secretsFound == maxSecrets)
+        {
+            return maxSecrets / secretsPerLoc + (maxSecrets % secretsPerLoc == 0 ? 0 : 1);
+        }
+        if (secretsFound < maxSecrets && secretsFound % secretsPerLoc == 0)
+        {
+            return secretsFound / secretsPerLoc;
+        }
+        return null;
+    }
+
     public override bool HandleEvent(SecretVisibilityChangedEvent E)
     {
         if (E.Entry is JournalSultanNote evtJsn)
@@ -63,23 +76,46 @@ public class PlayerSecretsMod : IPart
 
                 }
 
-                if (APGame.Instance.Data.AggregateSecretLocations.IndexOf(seenAllSultans) is int n)
+                if (
+                    _secretLocationIndex(
+                        seenAllSultans,
+                        APGame.Instance.Data.SultanSecretsPerLocation,
+                        APGame.Instance.Data.SultanSecretsRequired
+                    ) is int n
+                )
                 {
                     APGame.Instance.CheckLocation($"{n} Sultan Lore");
                 }
 
-                if (sultanPeriod == 6 && APGame.Instance.Data.ReshephSecretLocations != null)
-                    {
-                    if (APGame.Instance.Data.ReshephSecretLocations.IndexOf(seenSameSultan) is int m)
+                if (sultanPeriod == 6)
+                {
+                    var lookup = APGame.Instance.Data.ReshephSecretsRequired > 0 ?
+                        _secretLocationIndex(
+                            seenSameSultan,
+                            APGame.Instance.Data.ReshephSecretsPerLocation,
+                            APGame.Instance.Data.ReshephSecretsRequired
+                        ) :
+                        _secretLocationIndex(
+                            seenSameSultan,
+                            APGame.Instance.Data.PeriodSultanSecretsPerLocation,
+                            APGame.Instance.Data.PeriodSultanSecretsRequired
+                        );
+                    if (lookup is int m)
                     {
                         APGame.Instance.CheckLocation($"{m} Resheph Lore");
                     }
                 }
                 else
                 {
-                    if (APGame.Instance.Data.PerPeriodSecretLocations.IndexOf(seenSameSultan) is int m)
+                    if (
+                        _secretLocationIndex(
+                            seenSameSultan,
+                            APGame.Instance.Data.PeriodSultanSecretsPerLocation,
+                            APGame.Instance.Data.PeriodSultanSecretsRequired
+                        ) is int m
+                    )
                     {
-                        string count = m == 1 ? "Lore from the " : $"{m} Lore from the ";
+                        string count = m == 1 ? "" : $"{m} ";
                         string periodName = sultanPeriod switch
                         {
                             1 => "First",
@@ -88,7 +124,7 @@ public class PlayerSecretsMod : IPart
                             4 => "Fourth",
                             _ => "Fifth"
                         };
-                        APGame.Instance.CheckLocation($"{count}{periodName} Sultanate");
+                        APGame.Instance.CheckLocation($"{count} Lore from the {periodName} Sultanate");
                     }
                 }
             }

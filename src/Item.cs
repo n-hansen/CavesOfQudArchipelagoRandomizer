@@ -184,8 +184,21 @@ public static class Items
             switch (item.Name)
             {
                 case "Progressive Main Quest":
+                    string questItemName = APGame.Instance.ReceivedItemQuantity(item.Name)
+                    switch
+                    {
+                        1 => "{{m|Ancient Knickknack}}",
+                        2 => "{{m|Prime Knickknack}}",
+                        3 => "{{m|Weirdwire Fusor}}",
+                        4 => "{{m|Barathrumite Token}}",
+                        5 => "{{m|Waydroid Repair Kit}}",
+                        6 => "{{m|Eschaton Transcoder}}",
+                        7 => "{{m|Baetyl Optronic Adapter}}",
+                        8 => "{{m|Consortium Token}}",
+                        _ => "live and drink"
+                    };
                     GameLog.LogGameplay(
-                        "Received main quest unlock!",
+                        $"Received main quest unlock: {questItemName}",
                         APLocalOptions.PopupOnReceivedItem
                     );
                     return;

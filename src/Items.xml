@@ -28,4 +28,40 @@
       With a {{m|Waydroid Repair Kit}} (i.e., sufficient [{{m|Progressive Main Quest}}), you could restore some of its former glory." />
     <part Name="APWaydroid" />
   </object>
+  <object Name="APDataDiskModWooly" Inherits="ModDataDisk">
+    <part Name= "DataDisk" TargetBlueprint="[mod]ModWooly"/>
+  </object>
+  <object Name="APDataDiskModReinforced" Inherits="ModDataDisk">
+    <part Name= "DataDisk" TargetBlueprint="[mod]ModReinforced"/>
+  </object>
+  <object Name="APDataDiskModVisored" Inherits="ModDataDisk">
+    <part Name= "DataDisk" TargetBlueprint="[mod]ModVisored"/>
+  </object>
+  <object Name="APDataDiskModTwoFaced" Inherits="ModDataDisk">
+    <part Name= "DataDisk" TargetBlueprint="[mod]ModTwoFaced"/>
+  </object>
+  <object Name="APDataDiskModSharp" Inherits="ModDataDisk">
+    <part Name= "DataDisk" TargetBlueprint="[mod]ModSharp"/>
+  </object>
+  <object Name="APDataDiskModFreezing" Inherits="ModDataDisk">
+    <part Name= "DataDisk" TargetBlueprint="[mod]ModFreezing"/>
+  </object>
+  <object Name="APDataDiskModFlaming" Inherits="ModDataDisk">
+    <part Name= "DataDisk" TargetBlueprint="[mod]ModFlaming"/>
+  </object>
+  <object Name="APDataDiskModElectrified" Inherits="ModDataDisk">
+    <part Name= "DataDisk" TargetBlueprint="[mod]ModElectrified"/>
+  </object>
+  <object Name="APDataDiskModCounterweighted" Inherits="ModDataDisk">
+    <part Name= "DataDisk" TargetBlueprint="[mod]ModCounterweighted"/>
+  </object>
+  <object Name="APDataDiskModScoped" Inherits="ModDataDisk">
+    <part Name= "DataDisk" TargetBlueprint="[mod]ModScoped"/>
+  </object>
+  <object Name="APDataDiskModMasterwork" Inherits="ModDataDisk">
+    <part Name= "DataDisk" TargetBlueprint="[mod]ModMasterwork"/>
+  </object>
+  <object Name="APDataDiskModRadioPowered" Inherits="ModDataDisk">
+    <part Name= "DataDisk" TargetBlueprint="[mod]ModRadioPowered"/>
+  </object>
 </objects>

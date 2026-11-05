@@ -10,4 +10,10 @@
       <table Name="Implants_4PlusPointersWithCathedras" Number="1" Weight="4" />
     </group>
   </population>
+  <population Name="APSchrodingerPage">
+    <group Name="Items" Style="pickone" Weight="1">
+      <object Weight="8" Number="1" Blueprint="FactionDeed" />
+      <object Weight="20" Number="1" Blueprint="RandomFactionDeed" />
+    </group>
+  </population>
 </populations>

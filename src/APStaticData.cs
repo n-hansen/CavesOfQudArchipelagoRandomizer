@@ -22,6 +22,7 @@ public class ItemInfo
     public int Amount = 1;
     public string Blueprint;
     public string Population;
+    public int Limit = -1;
 }
 
 [System.Serializable]

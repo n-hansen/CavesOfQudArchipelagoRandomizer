@@ -228,6 +228,10 @@ public static class Items
                 case "Rapid Mutation Advancement":
                     The.Player.GetPart<PlayerStatsMod>().RapidMutationAdvancement();
                     return;
+                case "Location of Some Flattened Remains":
+                    GameLog.LogGameplay("Received the location of some flattened remains", APLocalOptions.PopupOnReceivedItem);
+			        JournalAPI.GetMapNote("$skrefcorpse")?.Reveal();
+                    return;
                 default:
                     GameLog.LogError($"Unknown item '{item.Name}' with id {item.Id}");
                     break;
